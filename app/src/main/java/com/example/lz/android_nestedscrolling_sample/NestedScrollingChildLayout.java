@@ -157,22 +157,20 @@ public class NestedScrollingChildLayout extends RelativeLayout implements Nested
                 startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
                 break;
             case MotionEvent.ACTION_MOVE:
-                float dy = event.getY() - lastY;
-                if (dispatchNestedPreScroll(0, (int) dy, consumed, offsetInWindow)) {
-                    //dy 要减掉parent 消耗的距离
-                    dy -= consumed[1];
+                float deltaY = event.getY() - lastY;
+                if (dispatchNestedPreScroll(0, (int) deltaY, consumed, offsetInWindow)) {
+                    //deltaY 要减掉parent 消耗的距离
+                    deltaY -= consumed[1];
                 }
                 // 上面的 (int)deltaY 会造成精度丢失，这里把精度给舍弃掉
-                if (Math.floor(Math.abs(dy)) == 0) {
-                    dy = 0;
+                if (Math.floor(Math.abs(deltaY)) == 0) {
+                    deltaY = 0;
                 }
-                //当前view top 不超过父view的上边界
-                float parentTopEdge = Math.max(getY() + dy, 0);
-                //当前view与父view的总间距
-                int totalMargin = ((View) getParent()).getHeight() - getHeight();
                 // 这里移动子View，下面的min,max是为了控制边界，避免子View越界
-                setY(Math.min(parentTopEdge, totalMargin));
-                //setY(getY() + dy);
+                //setY(Math.min(Math.max(getY() + deltaY, 0), ((View) getParent()).getHeight() - getHeight()));
+
+                int actualMoveY = getActualMoveY(deltaY);
+                setY(getY() + actualMoveY);
                 break;
             case MotionEvent.ACTION_UP:
                 stopNestedScroll();
@@ -183,6 +181,31 @@ public class NestedScrollingChildLayout extends RelativeLayout implements Nested
                 break;
         }
         return true;
+    }
+
+    /**
+     * 获取子view实际应该移动的距离，防止超出父view的上边距和下边距
+     *
+     * @param deltaY
+     * @return
+     */
+    private int getActualMoveY(float deltaY) {
+        // 应该移动的Y距离
+        final float originalMoveY = getY() + deltaY;
+        int actualMoveY;
+        //注意：这里 getY()即为当前view到父view的上边距，
+        //parent.getHeight() - getHeight() - getY()即为当前view到父view的下边距
+        if (originalMoveY <= 0) {
+            // 如果超过了父View的上边界，只消费子View到父View上边的距离
+            actualMoveY = -(int) getY();
+        } else if (originalMoveY >= ((View) getParent()).getHeight() - getHeight()) {
+            // 如果超过了父View的下边界，只消费子View到父View的下边距
+            actualMoveY = ((View) getParent()).getHeight() - getHeight() - (int) getY();
+        } else {
+            // 其他情况下全部消费
+            actualMoveY = (int) deltaY;
+        }
+        return actualMoveY;
     }
 
     private void cancelTouch() {
