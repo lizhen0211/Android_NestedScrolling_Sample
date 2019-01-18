@@ -8,8 +8,7 @@
 
     <com.example.lz.android_nestedscrolling_sample.NestedScrollingParentLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="30dp"
+        android:layout_height="400dp"
         android:background="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -18,8 +17,7 @@
 
         <com.example.lz.android_nestedscrolling_sample.NestedScrollingChildLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="30dp"
+            android:layout_height="150dp"
             android:background="@color/colorPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

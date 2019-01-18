@@ -5,6 +5,7 @@ import android.support.v4.view.NestedScrollingParent;
 import android.support.v4.view.NestedScrollingParentHelper;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -47,7 +48,8 @@ public class NestedScrollingParentLayout extends RelativeLayout implements Neste
      */
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        return false;
+        Log.e("NestedScroll Parent", "onStartNestedScroll");
+        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL;
     }
 
     @Override
@@ -62,27 +64,58 @@ public class NestedScrollingParentLayout extends RelativeLayout implements Neste
 
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-
+        Log.e("NestedScroll Parent", "onNestedScroll " + "dxConsumed:" + dxConsumed + " dyConsumed:" + dyConsumed
+                + " dxUnconsumed:" + dxUnconsumed + " dyUnconsumed:" + dyUnconsumed);
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
+        // 应该移动的Y距离
+        final float shouldMoveY = getY() + dy;
 
+        // 获取到父View的容器的引用，这里假定父View容器是View
+        final View parent = (View) getParent();
+
+        int consumedY;
+        //注意：这里 getY()即为当前view到父view的上边距，
+        //parent.getHeight() - getHeight() - getY()即为当前view到父view的下边距
+        if (shouldMoveY <= 0) {
+            // 如果超过了父View的上边界，只消费子View到父View上边的距离
+            consumedY = -(int) getY();
+        } else if (shouldMoveY >= parent.getHeight() - getHeight()) {
+            // 如果超过了父View的下边界，只消费子View到父View的下边距
+            consumedY = (int) (parent.getHeight() - getHeight() - getY());
+        } else {
+            // 其他情况下全部消费
+            consumedY = dy;
+        }
+
+        // 对父View进行移动
+        setY(getY() + consumedY);
+
+        // 将父View消费掉的放入consumed数组中
+        consumed[1] = consumedY;
+
+        Log.e("NestedScroll Parent", "onNestedPreScroll " + "dx:" + dx + " dy:" + dy
+                + " consumedX:" + consumed[0] + " consumedY:" + consumed[1]);
     }
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        return false;
+        Log.e("NestedScroll Parent", "onNestedFling " + "velocityX:" + velocityX + " velocityY:" + velocityY
+                + " consumed:" + consumed);
+        return true;
     }
 
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
-        return false;
+        Log.e("NestedScroll Parent", "onNestedPreFling " + "velocityX:" + velocityX + " velocityY:" + velocityY);
+        return true;
     }
 
     @Override
     public int getNestedScrollAxes() {
-        return ViewCompat.SCROLL_AXIS_NONE;
+        return nestedScrollingParentHelper.getNestedScrollAxes();
     }
 
 
