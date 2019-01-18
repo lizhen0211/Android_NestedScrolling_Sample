@@ -17,7 +17,12 @@ public class MainActivity extends Activity {
     }
 
     public void onSimpleDemoClick(View view) {
-        Intent intent = new Intent(MainActivity.this,SimpleDemoActivity.class);
+        Intent intent = new Intent(MainActivity.this, SimpleDemoActivity.class);
+        startActivity(intent);
+    }
+
+    public void onTitleFadeoutClick(View view) {
+        Intent intent = new Intent(MainActivity.this, TitleFadeoutActivity.class);
         startActivity(intent);
     }
 }
