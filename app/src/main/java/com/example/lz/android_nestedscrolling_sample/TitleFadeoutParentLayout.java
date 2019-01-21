@@ -89,7 +89,7 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
         final int currentOffset = getScrollY();
         final int topHeight = fadeoutTitleLayout.getHeight();
         Log.e("++", consumed + "");
-       /* if (target instanceof RecyclerView && velocityY < 0) {
+        /*if (target instanceof RecyclerView && velocityY < 0) {
             final RecyclerView recyclerView = (RecyclerView) target;
             final View firstChild = recyclerView.getChildAt(0);
             final int childAdapterPosition = recyclerView.getChildAdapterPosition(firstChild);

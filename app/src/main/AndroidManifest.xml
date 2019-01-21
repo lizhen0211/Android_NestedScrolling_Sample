@@ -17,7 +17,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SimpleDemoActivity" />
-        <activity android:name=".TitleFadeoutActivity"></activity>
+        <activity android:name=".TitleFadeoutActivity" />
+        <activity android:name=".HalfToFullRecycleViewActivity"></activity>
     </application>
 
 </manifest>
