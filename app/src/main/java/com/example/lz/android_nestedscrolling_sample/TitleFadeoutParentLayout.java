@@ -15,6 +15,8 @@ import android.widget.RelativeLayout;
  */
 public class TitleFadeoutParentLayout extends RelativeLayout implements NestedScrollingParent {
 
+    private RelativeLayout fadeoutTitleLayout;
+
     private NestedScrollingParentHelper nestedScrollingParentHelper = new NestedScrollingParentHelper(this);
 
     public TitleFadeoutParentLayout(Context context) {
@@ -55,38 +57,9 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
 
-
-        int consumedY = 0;
-
-        float curViewBottomY = getY() + getChildTitleLayout(this);
         Log.e("++", "-------------start-------------");
-        Log.e("++", "Y:" + getY() + " getHeight():" + getHeight() + " scrollY():" + getScrollY());
-        Log.e("++", " targetY:" + target.getY() + "  targetHeight():" + target.getHeight() + " targetScrollY:" + target.getScrollY());
-        Log.e("++", " curViewBottomY:" + curViewBottomY);
-        Log.e("++", "dy:" + dy);
-        /*if (dy > 0) {
-            //上滑
-            if (curViewBottomY <= 0) {
-                consumedY = 0;
-            } else {
-                consumedY = -dy;
-            }
-        } else {
-            //下滑
-            if (target.getScrollY() < 0) {
-                consumedY = 0;
-            } else {
-                consumedY = -dy;
-            }
-        }
-
-        // 对父View进行移动
-        setY(getY() + consumedY);
-
-        // 将父View消费掉的放入consumed数组中
-        consumed[0] = -dx;
-        consumed[1] = consumedY;*/
-        boolean hiddenTop = dy > 0 && getScrollY() < getChildTitleLayout(this);
+        Log.e("++", "dy:" + dy + " getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+        boolean hiddenTop = dy > 0 && getScrollY() < fadeoutTitleLayout.getHeight();
         boolean showTop = dy < 0 && getScrollY() >= 0 && !ViewCompat.canScrollVertically(target, -1);
 
         if (hiddenTop || showTop) {
@@ -98,7 +71,6 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
                 + " consumedX:" + consumed[0] + " consumedY:" + consumed[1]);
     }
 
-    //是否存在这个子viewA,返回true就是有，false就是没有
     private int getChildTitleLayout(View view) {
         int height = 0;
         if (view instanceof ViewGroup) {
@@ -112,5 +84,11 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
             }
         }
         return height;
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        fadeoutTitleLayout = findViewById(R.id.fadeout_title_layout);
     }
 }

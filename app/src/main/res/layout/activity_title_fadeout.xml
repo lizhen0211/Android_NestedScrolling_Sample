@@ -12,8 +12,8 @@
         android:layout_marginBottom="30dp">
 
         <RelativeLayout
-            android:tag="title_layout"
-            android:id="@+id/title_layout"
+            android:tag="fadeout_title_layout"
+            android:id="@+id/fadeout_title_layout"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:background="@color/colorAccent">
@@ -31,6 +31,6 @@
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/title_layout" />
+            android:layout_below="@id/fadeout_title_layout" />
     </com.example.lz.android_nestedscrolling_sample.TitleFadeoutParentLayout>
 </RelativeLayout>
