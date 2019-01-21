@@ -57,8 +57,9 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
 
-        Log.e("++", "-------------start-------------");
-        Log.e("++", "dy:" + dy + " getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+        Log.e("NestedScroll Parent", "-------------start-------------");
+        Log.e("NestedScroll Parent", " getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+        //dy>0 向上滑动，dy<0向下滑动
         boolean hiddenTop = dy > 0 && getScrollY() < fadeoutTitleLayout.getHeight();
         boolean showTop = dy < 0 && getScrollY() >= 0 && !ViewCompat.canScrollVertically(target, -1);
 
@@ -69,6 +70,37 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
 
         Log.e("NestedScroll Parent", "onNestedPreScroll " + "dx:" + dx + " dy:" + dy
                 + " consumedX:" + consumed[0] + " consumedY:" + consumed[1]);
+    }
+
+    @Override
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        final int currentOffset = getScrollY();
+        final int topHeight = fadeoutTitleLayout.getHeight();
+        Log.e("++", consumed + "");
+       /* if (target instanceof RecyclerView && velocityY < 0) {
+            final RecyclerView recyclerView = (RecyclerView) target;
+            final View firstChild = recyclerView.getChildAt(0);
+            final int childAdapterPosition = recyclerView.getChildAdapterPosition(firstChild);
+            consumed = childAdapterPosition > 3;
+        }*/
+
+        if (velocityY > 0) {//向上
+            if (getScrollY() < fadeoutTitleLayout.getHeight()) {
+                scrollTo(0, topHeight);
+            }
+        } else {//向下
+            if (getScrollY() <= fadeoutTitleLayout.getHeight()) {
+                scrollTo(0, 0);
+            }
+        }
+        return true;
+
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        fadeoutTitleLayout = findViewById(R.id.fadeout_title_layout);
     }
 
     private int getChildTitleLayout(View view) {
@@ -84,11 +116,5 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
             }
         }
         return height;
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        fadeoutTitleLayout = findViewById(R.id.fadeout_title_layout);
     }
 }
