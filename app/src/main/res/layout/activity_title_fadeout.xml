@@ -7,9 +7,9 @@
 
     <com.example.lz.android_nestedscrolling_sample.TitleFadeoutParentLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="30dp">
+        android:layout_height="match_parent"
+
+        >
 
         <RelativeLayout
             android:tag="fadeout_title_layout"

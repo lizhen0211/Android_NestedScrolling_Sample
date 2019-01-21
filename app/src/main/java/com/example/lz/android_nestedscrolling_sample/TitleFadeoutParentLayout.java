@@ -57,19 +57,31 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
 
-        Log.e("NestedScroll Parent", "-------------start-------------");
-        Log.e("NestedScroll Parent", " getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
-        //dy>0 向上滑动，dy<0向下滑动
+        /*//dy>0 向上滑动，dy<0向下滑动
         boolean hiddenTop = dy > 0 && getScrollY() < fadeoutTitleLayout.getHeight();
-        boolean showTop = dy < 0 && getScrollY() >= 0 && !ViewCompat.canScrollVertically(target, -1);
+        boolean showTop = dy < 0 && getScrollY() > 0 && !ViewCompat.canScrollVertically(target, -1);
 
         if (hiddenTop || showTop) {
+            Log.e("onNestedPreScroll", "dy: " + dy + " getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
             scrollBy(0, dy);
             consumed[1] = dy;
+        }*/
+
+        if (dy > 0) {//dy>0 向上滑动
+            if (getScrollY() < fadeoutTitleLayout.getHeight()) {
+                scrollBy(0, dy);
+                consumed[1] = dy;
+            }
+        } else {//dy<0向下滑动
+            if (getScrollY() > 0 && !ViewCompat.canScrollVertically(target, -1)) {
+                Log.e("onNestedPreScroll", "dy: " + dy + " before getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+                scrollBy(0, dy);
+                consumed[1] = dy;
+                Log.e("onNestedPreScroll", "dy: " + dy + " after getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+            }
         }
 
-        Log.e("NestedScroll Parent", "onNestedPreScroll " + "dx:" + dx + " dy:" + dy
-                + " consumedX:" + consumed[0] + " consumedY:" + consumed[1]);
+
     }
 
     @Override
