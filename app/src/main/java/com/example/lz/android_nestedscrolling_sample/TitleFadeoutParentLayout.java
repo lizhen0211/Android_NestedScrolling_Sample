@@ -113,6 +113,14 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        fadeoutTitleLayout.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        int totalHeight = MeasureSpec.getSize(heightMeasureSpec) + fadeoutTitleLayout.getMeasuredHeight();
+        int mode = MeasureSpec.getMode(heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(totalHeight, mode));
+    }
+
+    @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
         fadeoutTitleLayout = findViewById(R.id.fadeout_title_layout);
