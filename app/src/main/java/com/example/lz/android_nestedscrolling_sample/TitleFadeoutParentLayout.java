@@ -17,6 +17,8 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
 
     private RelativeLayout fadeoutTitleLayout;
 
+    private int fadeoutTitleLayoutHeight;
+
     private NestedScrollingParentHelper nestedScrollingParentHelper = new NestedScrollingParentHelper(this);
 
     public TitleFadeoutParentLayout(Context context) {
@@ -68,7 +70,7 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
         }*/
 
         if (dy > 0) {//dy>0 向上滑动
-            if (getScrollY() < fadeoutTitleLayout.getHeight()) {
+            if (getScrollY() < fadeoutTitleLayoutHeight) {
                 scrollBy(0, dy);
                 consumed[1] = dy;
             }
@@ -89,8 +91,6 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        final int currentOffset = getScrollY();
-        final int topHeight = fadeoutTitleLayout.getHeight();
         Log.e("++", consumed + "");
         /*if (target instanceof RecyclerView && velocityY < 0) {
             final RecyclerView recyclerView = (RecyclerView) target;
@@ -100,16 +100,22 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
         }*/
 
         if (velocityY > 0) {//向上
-            if (getScrollY() < fadeoutTitleLayout.getHeight()) {
-                scrollTo(0, topHeight);
+            if (getScrollY() < fadeoutTitleLayoutHeight) {
+                scrollTo(0, fadeoutTitleLayoutHeight);
             }
         } else {//向下
-            if (getScrollY() <= fadeoutTitleLayout.getHeight()) {
+            if (getScrollY() <= fadeoutTitleLayoutHeight) {
                 scrollTo(0, 0);
             }
         }
         return true;
 
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        fadeoutTitleLayoutHeight = fadeoutTitleLayout.getMeasuredHeight();
     }
 
     @Override
