@@ -74,10 +74,13 @@ public class TitleFadeoutParentLayout extends RelativeLayout implements NestedSc
             }
         } else {//dy<0向下滑动
             if (getScrollY() > 0 && !ViewCompat.canScrollVertically(target, -1)) {
-                Log.e("onNestedPreScroll", "dy: " + dy + " before getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
-                scrollBy(0, dy);
-                consumed[1] = dy;
-                Log.e("onNestedPreScroll", "dy: " + dy + " after getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+                //如果 getScrollY() - Math.abs(dy)<0 顶部有间隙
+                if (getScrollY() - Math.abs(dy) >= 0) {
+                    Log.e("onNestedPreScroll", "dy: " + dy + " before getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+                    scrollBy(0, dy);
+                    consumed[1] = dy;
+                    Log.e("onNestedPreScroll", "dy: " + dy + " after getScrollY():" + getScrollY() + " fadeoutTitleLayout.getHeight():" + fadeoutTitleLayout.getHeight());
+                }
             }
         }
 
