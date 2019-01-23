@@ -67,10 +67,12 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
                 Log.e("++", "up");
             }
         } else {
-            if (getScrollY() + dy >= 0 && getScrollY() <= drawViewHeight / 2) {
-                scrollBy(0, dy);
-                consumed[1] = dy;
-                Log.e("++", "down");
+            if (!halfToFullRecycleView.canScrollVertically(-1)) {
+                if (getScrollY() + dy >= 0 && getScrollY() <= drawViewHeight / 2) {
+                    scrollBy(0, dy);
+                    consumed[1] = dy;
+                    Log.e("++", "down");
+                }
             }
         }
         Log.e("++", "after:" + getScrollY() + " " + dy + " " + drawViewHeight / 2);
@@ -79,14 +81,15 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         halfToFullRecycleView.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-        int totalHeight = MeasureSpec.getSize(heightMeasureSpec) + drawViewHeight - halfToFullRecycleView.getMeasuredHeight();
+        int size = MeasureSpec.getSize(heightMeasureSpec);
+        int totalHeight = size + drawViewHeight / 2;
         int mode = MeasureSpec.getMode(heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(totalHeight, mode));
     }
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        return false;
+        return true;
     }
 
     @Override
