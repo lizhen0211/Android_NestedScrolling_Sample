@@ -1,5 +1,6 @@
 package com.example.lz.android_nestedscrolling_sample;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.support.v4.view.NestedScrollingParent;
 import android.support.v4.view.NestedScrollingParentHelper;
@@ -15,11 +16,11 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
 
     private NestedScrollingParentHelper nestedScrollingParentHelper = new NestedScrollingParentHelper(this);
     private RecyclerView halfToFullRecycleView;
+    private RelativeLayout halfTitleLayout;
     private int screenHeight;
     private int screenWidth;
     //刨除 状态栏、标题栏 的剩余高度，即view描画高度
     private int drawViewHeight;
-    private boolean isInterceptTouchEvent = true;
 
     public HalfToFullLayout(Context context) {
         super(context);
@@ -87,8 +88,43 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
         super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(totalHeight, mode));
     }
 
+    ValueAnimator flingAnimator = new ValueAnimator();
+
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        if (velocityY > 0) {//向上
+            if (getScrollY() < drawViewHeight / 2) {
+                if (!flingAnimator.isStarted()) {
+                    flingAnimator.setIntValues(getScrollY(), drawViewHeight / 2);
+                    flingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            scrollTo(0, (Integer) animation.getAnimatedValue());
+                        }
+                    });
+                    flingAnimator.setDuration(300);
+                    flingAnimator.start();
+                }
+                //不使用动画
+                //scrollTo(0, drawViewHeight / 2);
+            }
+        } else {//向下
+            if (getScrollY() <= drawViewHeight / 2) {
+                if (!flingAnimator.isStarted()) {
+                    flingAnimator.setIntValues(getScrollY(), 0);
+                    flingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            scrollTo(0, (Integer) animation.getAnimatedValue());
+                        }
+                    });
+                    flingAnimator.setDuration(300);
+                    flingAnimator.start();
+                }
+                //不使用动画
+                //scrollTo(0, 0);
+            }
+        }
         return true;
     }
 
@@ -96,6 +132,7 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
     protected void onFinishInflate() {
         super.onFinishInflate();
         halfToFullRecycleView = findViewById(R.id.half_to_full_recycle_view);
+        halfTitleLayout = findViewById(R.id.half_title_layout);
         //绘制区域高度
         drawViewHeight = screenHeight - getStatusBarHeight();
     }
