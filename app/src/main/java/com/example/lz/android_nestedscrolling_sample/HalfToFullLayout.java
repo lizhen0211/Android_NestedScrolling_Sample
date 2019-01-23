@@ -7,9 +7,8 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.view.MotionEvent;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 public class HalfToFullLayout extends RelativeLayout implements NestedScrollingParent {
@@ -18,6 +17,8 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
     private RecyclerView halfToFullRecycleView;
     private int screenHeight;
     private int screenWidth;
+    //刨除 状态栏、标题栏 的剩余高度，即view描画高度
+    private int drawViewHeight;
     private boolean isInterceptTouchEvent = true;
 
     public HalfToFullLayout(Context context) {
@@ -58,57 +59,29 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        /*if (!halfToFullRecycleView.canScrollVertically(-1)) {
-            if (dy > 0) {//向上
-                setY(getY() - dy);
+//        Log.e("++", "before:" + getScrollY() + " " + dy + " " + drawViewHeight / 2);
+        if (dy > 0) {
+            if (getScrollY() + dy <= drawViewHeight / 2) {
+                scrollBy(0, dy);
                 consumed[1] = dy;
-            } else {//向下
-                setY(getY() - dy);
-                consumed[1] = dy;
-//            Log.e("++", getY() + " " + dy + " " + layoutParams.height);
+                Log.e("++", "up");
             }
-        }*/
-
-    }
-
-    private float lastY;
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                lastY = (int) event.getRawY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                float detalY = lastY - event.getRawY();
-                lastY = (int) event.getRawY();
-
-                ViewGroup.LayoutParams layoutParams = halfToFullRecycleView.getLayoutParams();
-                if (detalY > 0) {//上拉
-                    if (layoutParams.height < screenHeight) {
-                        layoutParams.height += detalY;
-                    } else {
-                    }
-                } else {//下拉
-                    if (layoutParams.height > screenHeight / 2) {//小于屏幕1/2高度将不能下拉
-                        layoutParams.height += detalY;
-                    } else {
-                    }
-                }
-                halfToFullRecycleView.setLayoutParams(layoutParams);
-                break;
-            case MotionEvent.ACTION_UP:
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                break;
-            default:
+        } else {
+            if (getScrollY() + dy >= 0 && getScrollY() <= drawViewHeight / 2) {
+                scrollBy(0, dy);
+                consumed[1] = dy;
+                Log.e("++", "down");
+            }
         }
-        return true;
+        Log.e("++", "after:" + getScrollY() + " " + dy + " " + drawViewHeight / 2);
     }
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return isInterceptTouchEvent;
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        halfToFullRecycleView.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        int totalHeight = MeasureSpec.getSize(heightMeasureSpec) + drawViewHeight - halfToFullRecycleView.getMeasuredHeight();
+        int mode = MeasureSpec.getMode(heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(totalHeight, mode));
     }
 
     @Override
@@ -120,5 +93,20 @@ public class HalfToFullLayout extends RelativeLayout implements NestedScrollingP
     protected void onFinishInflate() {
         super.onFinishInflate();
         halfToFullRecycleView = findViewById(R.id.half_to_full_recycle_view);
+        //绘制区域高度
+        drawViewHeight = screenHeight - getStatusBarHeight();
     }
+
+    public int getStatusBarHeight() {
+
+        int statusBarHeight = -1;
+        //获取status_bar_height资源的ID
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            //根据资源ID获取响应的尺寸值
+            statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+        }
+        return statusBarHeight;
+    }
+
 }
