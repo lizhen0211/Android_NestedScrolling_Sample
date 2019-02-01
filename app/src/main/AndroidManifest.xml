@@ -18,7 +18,8 @@
         </activity>
         <activity android:name=".SimpleDemoActivity" />
         <activity android:name=".TitleFadeoutActivity" />
-        <activity android:name=".HalfToFullRecycleViewActivity"></activity>
+        <activity android:name=".HalfToFullRecycleViewActivity" />
+        <activity android:name=".TouchRecycleviewActivity" />
     </application>
 
 </manifest>

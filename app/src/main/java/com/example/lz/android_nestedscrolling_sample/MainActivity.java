@@ -30,4 +30,10 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(MainActivity.this, HalfToFullRecycleViewActivity.class);
         startActivity(intent);
     }
+
+    public void onTouchRecycleViewClick(View view) {
+        Intent intent = new Intent(this, TouchRecycleviewActivity.class);
+        startActivity(intent);
+    }
+
 }
