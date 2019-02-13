@@ -87,25 +87,27 @@ public class TouchRecycleviewActivity extends Activity {
                         }
 
                         //--------- title 滑动 start ---------
-                        float y = titleLayout.getY();
-                        float moveDownEdge = ((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).topMargin;
-                        float moveUpEdge = -(((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).height);
-                        //detaY < 0 向下 detaY > 0 向上
-                        if (detaY < 0 && y <= moveDownEdge || detaY > 0 && y >= moveUpEdge) {
-                            titleLayout.setY(y -= detaY);
-                            //Log.e(TouchRecycleviewActivity.class.getSimpleName(), detaY + " " + moveDownEdge + " " + moveUpEdge + " " + y + "");
-                        }
+//                        float y = titleLayout.getY();
+//                        float moveDownEdge = ((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).topMargin;
+//                        float moveUpEdge = -(((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).height);
+//                        //detaY < 0 向下 detaY > 0 向上
+//                        if (detaY < 0 && y <= moveDownEdge || detaY > 0 && y >= moveUpEdge) {
+//                            titleLayout.setY(y -= detaY);
+//                            //Log.e(TouchRecycleviewActivity.class.getSimpleName(), detaY + " " + moveDownEdge + " " + moveUpEdge + " " + y + "");
+//                        }
                         //--------- title 滑动 end ---------
                         break;
                     case MotionEvent.ACTION_UP:
                         if (detaY < 0) {//向下滑动
                             if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
+                                runTitleLayoutAnim(detaY);
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                             } else {
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, 0);
                             }
                         } else {//向上滑动
                             if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
+                                runTitleLayoutAnim(detaY);
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight);
                             } else {
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
@@ -160,12 +162,14 @@ public class TouchRecycleviewActivity extends Activity {
             if (detaY > 0) {//向上滑动
                 if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
                     runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight);
+                    runTitleLayoutAnim(detaY);
                 } else {
                     runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                 }
             } else {//向下滑动
                 if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
                     runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                    runTitleLayoutAnim(detaY);
                 } else {
                     runTouchLayoutAnim(layoutParams, layoutParams.height, 0);
                 }
@@ -186,6 +190,41 @@ public class TouchRecycleviewActivity extends Activity {
             });
             touchLayoutAnimator.setDuration(500);
             touchLayoutAnimator.start();
+        }
+    }
+
+    private void runTitleLayoutAnim(final float detaY) {
+        final float y = titleLayout.getY();
+        float moveDownEdge = ((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).topMargin;
+        float moveUpEdge = -(((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).height);
+        //detaY < 0 向下 detaY > 0 向上
+        if (detaY < 0 && y <= moveDownEdge) {
+            if (!titleLayoutAnimator.isStarted()) {
+                titleLayoutAnimator.setFloatValues((int) y, moveDownEdge);
+                titleLayoutAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        titleLayout.setY((float) animation.getAnimatedValue());
+                    }
+                });
+                titleLayoutAnimator.setDuration(500);
+                titleLayoutAnimator.start();
+            }
+            //Log.e(TouchRecycleviewActivity.class.getSimpleName(), detaY + " " + moveDownEdge + " " + moveUpEdge + " " + y + "");
+        }
+
+        if (detaY > 0 && y >= moveUpEdge) {
+            if (!titleLayoutAnimator.isStarted()) {
+                titleLayoutAnimator.setFloatValues((int) y, moveUpEdge);
+                titleLayoutAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        titleLayout.setY((float) animation.getAnimatedValue());
+                    }
+                });
+                titleLayoutAnimator.setDuration(500);
+                titleLayoutAnimator.start();
+            }
         }
     }
 
