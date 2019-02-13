@@ -32,7 +32,7 @@ public class TouchRecycleviewActivity extends Activity {
     private int drawViewHeight;
     private RelativeLayout touchTitleLayout;
     private RelativeLayout titleLayout;
-    private LinearLayout touchLayout;
+    private RelativeLayout touchLayout;
     private RecyclerView recyclerView;
     private GestureDetectorCompat mDetector;
     private float lastY = 0;
@@ -55,10 +55,10 @@ public class TouchRecycleviewActivity extends Activity {
         screenWidth = dm1.widthPixels;
 
         int statusBarHeight = getStatusBarHeight(this);
-        /*RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-        layoutParams.topMargin = (screenHeight - statusBarHeight) / 2;*/
-
         drawViewHeight = screenHeight - statusBarHeight;
+
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+        layoutParams.height = drawViewHeight / 2;
 
         mDetector = new GestureDetectorCompat(this, onGestureListener);
 
@@ -74,10 +74,11 @@ public class TouchRecycleviewActivity extends Activity {
                         break;
                     case MotionEvent.ACTION_MOVE:
                         float detaY = lastY - event.getY();
-
+                        Log.e(TouchRecycleviewActivity.class.getSimpleName(), lastY + " " + event.getY() + " " + detaY);
                         ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
                         float recycleHeightAfterMove = layoutParams.height + detaY;
-                        if (recyclerView.getY() >= 0 && recycleHeightAfterMove <= drawViewHeight - touchTitleLayout.getHeight()) {
+                        //recycleHeightAfterMove 不能为负数
+                        if (recyclerView.getY() >= 0 && recycleHeightAfterMove >= 0 && recycleHeightAfterMove <= drawViewHeight - touchTitleLayout.getHeight()) {
                             layoutParams.height += detaY;
                             recyclerView.setLayoutParams(layoutParams);
                             Log.e(TouchRecycleviewActivity.class.getSimpleName(), "enter");
@@ -100,7 +101,7 @@ public class TouchRecycleviewActivity extends Activity {
                 return true;
             }
         });
-        touchLayout = (LinearLayout) findViewById(R.id.touch_layout);
+        touchLayout = (RelativeLayout) findViewById(R.id.touch_layout);
         titleLayout = (RelativeLayout) findViewById(R.id.title_layout);
     }
 
@@ -136,7 +137,30 @@ public class TouchRecycleviewActivity extends Activity {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             Log.e(TouchRecycleviewActivity.class.getSimpleName(), "onFling");
-            return false;
+            float detaY = e2.getY() - e1.getY();
+            if (detaY < 0) {
+                if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                    layoutParams.height = drawViewHeight;
+                    recyclerView.setLayoutParams(layoutParams);
+                } else {
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                    layoutParams.height = drawViewHeight / 2;
+                    recyclerView.setLayoutParams(layoutParams);
+                }
+
+            } else {
+                if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                    layoutParams.height = drawViewHeight / 2;
+                    recyclerView.setLayoutParams(layoutParams);
+                } else {
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                    layoutParams.height = 0;
+                    recyclerView.setLayoutParams(layoutParams);
+                }
+            }
+            return true;
         }
     };
 

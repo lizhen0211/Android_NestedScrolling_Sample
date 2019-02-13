@@ -19,12 +19,11 @@
             android:text="title" />
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/touch_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical">
+        android:layout_alignParentBottom="true">
 
         <RelativeLayout
             android:id="@+id/touch_title_layout"
@@ -38,6 +37,7 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/touch_recycle_view"
             android:layout_width="match_parent"
-            android:layout_height="300dp" />
-    </LinearLayout>
+            android:layout_height="300dp"
+            android:layout_below="@id/touch_title_layout" />
+    </RelativeLayout>
 </RelativeLayout>
