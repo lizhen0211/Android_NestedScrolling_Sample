@@ -36,7 +36,8 @@ public class TouchRecycleviewActivity extends Activity {
     private RecyclerView recyclerView;
     private GestureDetectorCompat mDetector;
     private float lastY = 0;
-    private ValueAnimator flingAnimator = new ValueAnimator();
+    private ValueAnimator touchLayoutAnimator = new ValueAnimator();
+    private ValueAnimator titleLayoutAnimator = new ValueAnimator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +70,12 @@ public class TouchRecycleviewActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
                 mDetector.onTouchEvent(event);
                 RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                float detaY = lastY - event.getY();
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         lastY = event.getY();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        float detaY = lastY - event.getY();
                         Log.e(TouchRecycleviewActivity.class.getSimpleName(), lastY + " " + event.getY() + " " + detaY);
 
                         float recycleHeightAfterMove = layoutParams.height + detaY;
@@ -97,17 +98,17 @@ public class TouchRecycleviewActivity extends Activity {
                         //--------- title 滑动 end ---------
                         break;
                     case MotionEvent.ACTION_UP:
-                        if (lastY - event.getY() < 0) {//向下滑动
+                        if (detaY < 0) {//向下滑动
                             if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                                runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                                runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                             } else {
-                                runAnim(layoutParams, layoutParams.height, 0);
+                                runTouchLayoutAnim(layoutParams, layoutParams.height, 0);
                             }
                         } else {//向上滑动
                             if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                                runAnim(layoutParams, layoutParams.height, drawViewHeight);
+                                runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight);
                             } else {
-                                runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                                runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                             }
                         }
                         break;
@@ -118,7 +119,8 @@ public class TouchRecycleviewActivity extends Activity {
         touchLayout = (RelativeLayout) findViewById(R.id.touch_layout);
         titleLayout = (RelativeLayout) findViewById(R.id.title_layout);
 
-        flingAnimator.setInterpolator(new DecelerateInterpolator());
+        touchLayoutAnimator.setInterpolator(new DecelerateInterpolator());
+        titleLayoutAnimator.setInterpolator(new DecelerateInterpolator());
     }
 
     private GestureDetector.OnGestureListener onGestureListener = new GestureDetector.OnGestureListener() {
@@ -153,37 +155,37 @@ public class TouchRecycleviewActivity extends Activity {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             Log.e(TouchRecycleviewActivity.class.getSimpleName(), "onFling");
-            float detaY = e2.getY() - e1.getY();
+            float detaY = e1.getY() - e2.getY();
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-            if (detaY < 0) {//向上滑动
+            if (detaY > 0) {//向上滑动
                 if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                    runAnim(layoutParams, layoutParams.height, drawViewHeight);
+                    runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight);
                 } else {
-                    runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                    runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                 }
             } else {//向下滑动
                 if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                    runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                    runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                 } else {
-                    runAnim(layoutParams, layoutParams.height, 0);
+                    runTouchLayoutAnim(layoutParams, layoutParams.height, 0);
                 }
             }
             return true;
         }
     };
 
-    private void runAnim(final RelativeLayout.LayoutParams layoutParams, int startHeight, int endHeight) {
-        if (!flingAnimator.isStarted()) {
-            flingAnimator.setIntValues(startHeight, endHeight);
-            flingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+    private void runTouchLayoutAnim(final RelativeLayout.LayoutParams layoutParams, int startHeight, int endHeight) {
+        if (!touchLayoutAnimator.isStarted()) {
+            touchLayoutAnimator.setIntValues(startHeight, endHeight);
+            touchLayoutAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     layoutParams.height = (Integer) animation.getAnimatedValue();
                     recyclerView.setLayoutParams(layoutParams);
                 }
             });
-            flingAnimator.setDuration(500);
-            flingAnimator.start();
+            touchLayoutAnimator.setDuration(500);
+            touchLayoutAnimator.start();
         }
     }
 
