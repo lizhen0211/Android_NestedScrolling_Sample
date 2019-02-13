@@ -1,5 +1,6 @@
 package com.example.lz.android_nestedscrolling_sample;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -11,10 +12,9 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ public class TouchRecycleviewActivity extends Activity {
     private RecyclerView recyclerView;
     private GestureDetectorCompat mDetector;
     private float lastY = 0;
+    private ValueAnimator flingAnimator = new ValueAnimator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +68,7 @@ public class TouchRecycleviewActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 mDetector.onTouchEvent(event);
-
+                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         lastY = event.getY();
@@ -75,7 +76,7 @@ public class TouchRecycleviewActivity extends Activity {
                     case MotionEvent.ACTION_MOVE:
                         float detaY = lastY - event.getY();
                         Log.e(TouchRecycleviewActivity.class.getSimpleName(), lastY + " " + event.getY() + " " + detaY);
-                        ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
+
                         float recycleHeightAfterMove = layoutParams.height + detaY;
                         //recycleHeightAfterMove 不能为负数
                         if (recyclerView.getY() >= 0 && recycleHeightAfterMove >= 0 && recycleHeightAfterMove <= drawViewHeight - touchTitleLayout.getHeight()) {
@@ -96,6 +97,19 @@ public class TouchRecycleviewActivity extends Activity {
                         //--------- title 滑动 end ---------
                         break;
                     case MotionEvent.ACTION_UP:
+                        if (lastY - event.getY() < 0) {//向下滑动
+                            if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
+                                runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                            } else {
+                                runAnim(layoutParams, layoutParams.height, 0);
+                            }
+                        } else {//向上滑动
+                            if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
+                                runAnim(layoutParams, layoutParams.height, drawViewHeight);
+                            } else {
+                                runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                            }
+                        }
                         break;
                 }
                 return true;
@@ -103,6 +117,8 @@ public class TouchRecycleviewActivity extends Activity {
         });
         touchLayout = (RelativeLayout) findViewById(R.id.touch_layout);
         titleLayout = (RelativeLayout) findViewById(R.id.title_layout);
+
+        flingAnimator.setInterpolator(new DecelerateInterpolator());
     }
 
     private GestureDetector.OnGestureListener onGestureListener = new GestureDetector.OnGestureListener() {
@@ -138,31 +154,38 @@ public class TouchRecycleviewActivity extends Activity {
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             Log.e(TouchRecycleviewActivity.class.getSimpleName(), "onFling");
             float detaY = e2.getY() - e1.getY();
-            if (detaY < 0) {
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+            if (detaY < 0) {//向上滑动
                 if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-                    layoutParams.height = drawViewHeight;
-                    recyclerView.setLayoutParams(layoutParams);
+                    runAnim(layoutParams, layoutParams.height, drawViewHeight);
                 } else {
-                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-                    layoutParams.height = drawViewHeight / 2;
-                    recyclerView.setLayoutParams(layoutParams);
+                    runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                 }
-
-            } else {
+            } else {//向下滑动
                 if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-                    layoutParams.height = drawViewHeight / 2;
-                    recyclerView.setLayoutParams(layoutParams);
+                    runAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                 } else {
-                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-                    layoutParams.height = 0;
-                    recyclerView.setLayoutParams(layoutParams);
+                    runAnim(layoutParams, layoutParams.height, 0);
                 }
             }
             return true;
         }
     };
+
+    private void runAnim(final RelativeLayout.LayoutParams layoutParams, int startHeight, int endHeight) {
+        if (!flingAnimator.isStarted()) {
+            flingAnimator.setIntValues(startHeight, endHeight);
+            flingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    layoutParams.height = (Integer) animation.getAnimatedValue();
+                    recyclerView.setLayoutParams(layoutParams);
+                }
+            });
+            flingAnimator.setDuration(500);
+            flingAnimator.start();
+        }
+    }
 
     private List<String> generateData() {
         List<String> datas = new ArrayList<>();
