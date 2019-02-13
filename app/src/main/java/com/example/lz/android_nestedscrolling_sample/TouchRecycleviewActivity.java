@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +53,71 @@ public class TouchRecycleviewActivity extends Activity {
         recyclerView.setHasFixedSize(true);
         mAdapter = new SimpleRecyclerViewAdapter(generateData());
         recyclerView.setAdapter(mAdapter);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
+            private int lastVisibleItemPosition;
+            private int firstVisibleItemPosition;
+
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+
+                //得到当前界面可见数据的大小
+                int visibleItemCount = layoutManager.getChildCount();
+
+                //得到RecyclerView对应所有数据的大小
+                int totalItemCount = layoutManager.getItemCount();
+
+                //判断条件可按实际需要调整
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && visibleItemCount > 0) {
+
+                    //最后视图对应的position等于总数-1时，说明上一次滑动结束时，触底了
+                    if (lastVisibleItemPosition == totalItemCount - 1) {
+
+
+                        //第一个视图的position等于0，说明上一次滑动结束时，触顶了
+                    } else if (firstVisibleItemPosition == 0) {
+                        if (recyclerView.getLayoutParams().height > drawViewHeight / 2) {
+
+                            float moveDownEdge = ((RelativeLayout.LayoutParams) titleLayout.getLayoutParams()).topMargin;
+                            if (!titleLayoutAnimator.isStarted()) {
+                                titleLayoutAnimator.setFloatValues((int) titleLayout.getY(), moveDownEdge);
+                                titleLayoutAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                    @Override
+                                    public void onAnimationUpdate(ValueAnimator animation) {
+                                        titleLayout.setY((float) animation.getAnimatedValue());
+                                    }
+                                });
+                                titleLayoutAnimator.setDuration(500);
+                                titleLayoutAnimator.start();
+                            }
+                            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                            runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
+                        } else {
+                            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+                            runTouchLayoutAnim(layoutParams, layoutParams.height, 0);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+
+                if (layoutManager instanceof LinearLayoutManager) {
+                    //得到当前界面，最后一个子视图对应的position
+                    lastVisibleItemPosition = ((LinearLayoutManager) layoutManager)
+                            .findLastVisibleItemPosition();
+
+                    //得到当前界面，第一个子视图的position
+                    firstVisibleItemPosition = ((LinearLayoutManager) layoutManager)
+                            .findFirstVisibleItemPosition();
+                }
+            }
+        });
         DisplayMetrics dm1 = getResources().getDisplayMetrics();
         screenHeight = dm1.heightPixels;
         screenWidth = dm1.widthPixels;
@@ -70,21 +136,20 @@ public class TouchRecycleviewActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
                 mDetector.onTouchEvent(event);
                 RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
-                float detaY = lastY - event.getY();
+
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         lastY = event.getY();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        Log.e(TouchRecycleviewActivity.class.getSimpleName(), lastY + " " + event.getY() + " " + detaY);
-
+                        float detaY = lastY - event.getY();
                         float recycleHeightAfterMove = layoutParams.height + detaY;
                         //recycleHeightAfterMove 不能为负数
                         if (recyclerView.getY() >= 0 && recycleHeightAfterMove >= 0 && recycleHeightAfterMove <= drawViewHeight - touchTitleLayout.getHeight()) {
                             layoutParams.height += detaY;
                             recyclerView.setLayoutParams(layoutParams);
-                            Log.e(TouchRecycleviewActivity.class.getSimpleName(), "enter");
                         }
+                        Log.e(TouchRecycleviewActivity.class.getSimpleName(), "ACTION_MOVE" + lastY);
 
                         //--------- title 滑动 start ---------
 //                        float y = titleLayout.getY();
@@ -98,20 +163,23 @@ public class TouchRecycleviewActivity extends Activity {
                         //--------- title 滑动 end ---------
                         break;
                     case MotionEvent.ACTION_UP:
-                        if (detaY < 0) {//向下滑动
+                        float detaY1 = lastY - event.getY();
+                        if (detaY1 < 0) {//向下滑动
                             if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                                runTitleLayoutAnim(detaY);
+                                runTitleLayoutAnim(detaY1);
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                             } else {
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, 0);
                             }
+                            Log.e(TouchRecycleviewActivity.class.getSimpleName(), "ACTION_UP UP" + lastY);
                         } else {//向上滑动
                             if (recyclerView.getLayoutParams().height >= drawViewHeight / 2) {
-                                runTitleLayoutAnim(detaY);
+                                runTitleLayoutAnim(detaY1);
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight);
                             } else {
                                 runTouchLayoutAnim(layoutParams, layoutParams.height, drawViewHeight / 2);
                             }
+                            Log.e(TouchRecycleviewActivity.class.getSimpleName(), "ACTION_UP DOWN" + lastY);
                         }
                         break;
                 }
